@@ -121,8 +121,7 @@ else:
 
 # 4. Check if ending address is greater than starting and display calculation or error message.
 if count > 0:
-    print(f"Your checked IP's are: {first_ip} - {second_ip} \nThe number of addresses between them are: {count}, "
-          f"excluding the ending one.")
+    print(f"Your checked IP's are: {0} - {1}. The number of addresses between them are: {2}, excluding the ending one.".format(first_ip, second_ip, count))
 else:
     print(f"The ending address must be greater than the starting one. Please try again.")
 
