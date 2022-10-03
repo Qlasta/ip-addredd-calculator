@@ -1,10 +1,24 @@
 
+hex_letters = ["a", "b", "c", "d", "e", "f"]
+first_ip = ""
+second_ip = ""
+count = 0
+
+# Functions:
+
+
 def validate_ipv4(ip_number):
+    """ Validates ipv4 by the rules: form "x1.x2.x3.x4" where 0 <= xi <= 255 and xi cannot contain leading zeros.
+    Returns valid True or error messages."""
     global format_is_valid
     ip_num_list = ip_number.split(".")
     if len(ip_num_list) == 4:
         correct_n = 0
         for n in ip_num_list:
+            try:
+                int(n) and int(n[0])
+            except ValueError:
+                return print("Format is not valid ('n' should be between 0 and 255), please try again.")
             if 0 <= int(n) <= 255:
                 if len(n) > 1 and int(n[0]) == 0:
                     return print("Format is not valid ('n' cannot contain leading '0'), please try again.")
@@ -17,29 +31,63 @@ def validate_ipv4(ip_number):
             return print("Format is not valid ('n' should be between 0 and 255), please try again.")
     else:
         return print("Format is not valid (should be 'n1.n2.n3.n4'), please try again.")
-hex_letters = ["a", "b", "c", "d", "e","f"]
+
 
 def validate_ipv6(ip_number):
+    """ Validates ipv6 by the rules: form "x1:x2:x3:x4:x5:x6:x7:x8" where 1 <= xi.length <= 4 xi is a hexadecimal string
+     which may contain digits, lowercase and upper-case letters ('a' to 'f').Returns valid True or error messages."""
     global format_is_valid
     ip_num_list = ip_number.split(":")
     if len(ip_num_list) == 8:
         correct_n = 0
         for n in ip_num_list:
-            if len(n) in range(1,5):
+            if len(n) in range(1, 5):
                 for x in n:
-                    if x in hex_letters or int(x) in range(10):
-                        correct_n += 1
+                    try:
+                        if x in hex_letters or int(x) in range(10):
+                            correct_n += 1
+                    except ValueError:
+                        return print("Format is not valid ('n' should be in hexadecimal numbers, 1-4 digits), please "
+                                     "try again.")
         if correct_n == len(''.join(ip_num_list)):
             format_is_valid = True
             return
         else:
-            return print("Format is not valid, please try again.")
+            return print("Format is not valid ('n' should be in hexadecimal numbers, 4 digits), please try again.")
     else:
-        return print("Format is not valid, please try again.")
+        return print("Format is not valid (should be 'n1:n2:n3:n4:n5:n6:n7:n8'), please try again.")
 
 
+def count_adresses(ip_type, starting_ip, ending_ip, format_divider):
+    """Return IP's count in range, giving IP type - 'ipv4' or 'ipv6', two IP addresses and divider - '.' or ':'"""
+    first_ip_list = starting_ip.split(format_divider)
+    second_ip_list = ending_ip.split(format_divider)
+    ip_count = 0
+    if ip_type == 'ipv4':
+        # limit - decimal numbers in one fragment including 0.
+        limit = int("11111111", 2) + 1
+        for n in range(4):
+            diff = int(second_ip_list[n]) - int(first_ip_list[n])
+            ip_count *= limit
+            ip_count += diff
+    elif ip_type == 'ipv6':
+        # limit - hexadecimal numbers in one fragment including 0.
+        limit = int("ffff", 16) + 1
+        ip_count = 0
+        for n in range(8):
+            diff = int(second_ip_list[n], 16) - int(first_ip_list[n], 16)
+            ip_count *= limit
+            ip_count += diff
+    return ip_count
+
+
+# 1. Choose IP type.
 ip_format = input("Which IP version do you want to check? Enter IPv4 or IPv6: ").lower()
+
+# 2. Check IPv4.
 if ip_format == "ipv4":
+    divider = "."
+    # Enter and validate IP's.
     format_is_valid = False
     while not format_is_valid:
         first_ip = input("Enter starting IP address in format 'n1.n2.n3.n4' ('n' between 0 and 255): ")
@@ -48,41 +96,38 @@ if ip_format == "ipv4":
     while not format_is_valid:
         second_ip = input("Enter ending IP address in format 'n1.n2.n3.n4' ('n' between 0 and 255): ")
         validate_ipv4(second_ip)
+    # Calculate IP's in range.
+    count = count_adresses(ip_format, first_ip, second_ip, divider)
 
-    first_ip_list = first_ip.split(".")
-    second_ip_list = second_ip.split(".")
-    lim = 256
-    count = 0
-    for n in range(4):
-        diff = int(second_ip_list[n]) - int(first_ip_list[n])
-        count *= lim
-        count += diff
-
+# 3. Check IPv6.
 elif ip_format == "ipv6":
+    divider = ':'
+    # Enter and validate IP's.
     format_is_valid = False
     while not format_is_valid:
-        first_ip = input("Enter starting IP address in format 'n1:n2:n3:n4:n5:n6:n7:n8' ('n' in hexadecimal between 0000 and ffff): ").lower()
+        first_ip = input("Enter starting IP address in format 'n1:n2:n3:n4:n5:n6:n7:n8' ('n' in hexadecimal between "
+                         "0000 and ffff): ").lower()
         validate_ipv6(first_ip)
     format_is_valid = False
     while not format_is_valid:
-        second_ip = input("Enter ending IP address in format 'n1:n2:n3:n4:n5:n6:n7:n8' ('n' in hexadecimal between 0000 and ffff): ").lower()
+        second_ip = input("Enter ending IP address in format 'n1:n2:n3:n4:n5:n6:n7:n8' ('n' in hexadecimal between "
+                          "0000 and ffff): ").lower()
         validate_ipv6(second_ip)
-    first_ip_list = first_ip.split(":")
-    second_ip_list = second_ip.split(":")
-    lim = 65536 # int("ffff",16) + 1 including 0
-    count = 0
-    for n in range(8):
-        diff = int(second_ip_list[n], 16) - int(first_ip_list[n], 16)
-        count *= lim
-        count += diff
+    # Calculate IP's in range.
+    count = count_adresses(ip_format, first_ip, second_ip, divider)
+else:
+    print("Enter IPv4 or IPv6, please try again. ")
+    exit()
 
-# Patikrinti ar antrasis IP nėra mažesnis nei pirmasis
+# 4. Check if ending address is greater than starting and display calculation or error message.
 if count > 0:
-# Patikrinti ar antrasis IP nėra mažesnis nei pirmasis
-    print(f"Your checked IP's are: {first_ip} - {second_ip} \nThe number of addresses between them are: {count}")
+    print(f"Your checked IP's are: {first_ip} - {second_ip} \nThe number of addresses between them are: {count}, "
+          f"excluding the ending one.")
 else:
     print(f"The ending address must be greater than the starting one. Please try again.")
 
+
+# Documentation.
 '''A valid IPv4 address is an IP in the form "x1.x2.x3.x4" where 0 <= xi <= 255 and xi cannot contain leading zeros. 
 For example, "192.168.1.1" and "192.168.1.0" are valid IPv4 addresses while "192.168.01.1", "192.168.1.00", 
 and "192.168@1.1" are invalid IPv4 addresses. 
