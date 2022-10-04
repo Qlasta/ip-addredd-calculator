@@ -1,4 +1,4 @@
-# ip-address-calculator
+# ip-address-calculator-human
 program receives 2 IPs and returns number of addresses between them
 
 - Go to Linux terminal.
