@@ -5,7 +5,14 @@ second_ip = ""
 count = 0
 
 # Functions:
-
+def convert_ipv6_short(ip_number):
+    ip_num_list = ip_number.split(":")
+    if len(ip_num_list) == 8:
+        for n in ip_num_list:
+            if n == '':
+                ip_num_list[ip_num_list.index(n)] = "0"
+        ip_number = ':'.join(ip_num_list)
+    return ip_number
 
 def validate_ipv4(ip_number):
     """ Validates ipv4 by the rules: form "x1.x2.x3.x4" where 0 <= xi <= 255 and xi cannot contain leading zeros.
@@ -37,18 +44,23 @@ def validate_ipv6(ip_number):
     """ Validates ipv6 by the rules: form "x1:x2:x3:x4:x5:x6:x7:x8" where 1 <= xi.length <= 4 xi is a hexadecimal string
      which may contain digits, lowercase and upper-case letters ('a' to 'f').Returns valid True or error messages."""
     global format_is_valid
-    ip_num_list = ip_number.split(":")
+    ip_number_converted = convert_ipv6_short(ip_number)
+    ip_num_list = ip_number_converted.split(":")
     if len(ip_num_list) == 8:
         correct_n = 0
         for n in ip_num_list:
-            if len(n) in range(1, 5):
-                for x in n:
-                    try:
-                        if x in hex_letters or int(x) in range(10):
-                            correct_n += 1
-                    except ValueError:
-                        return print("Format is not valid ('n' should be in hexadecimal numbers, 1-4 digits), please "
-                                     "try again.")
+            if n == '':
+                ip_num_list[ip_num_list.index(n)] = "0"
+                correct_n += 1
+            else:
+                if len(n) in range(1, 5):
+                    for x in n:
+                        try:
+                            if x in hex_letters or int(x) in range(10):
+                                correct_n += 1
+                        except ValueError:
+                            return print("Format is not valid ('n' should be in hexadecimal numbers, 1-4 digits), please "
+                                         "try again.")
         if correct_n == len(''.join(ip_num_list)):
             format_is_valid = True
             return
@@ -65,14 +77,14 @@ def count_adresses(ip_type, starting_ip, ending_ip, format_divider):
     ip_count = 0
     if ip_type == 'ipv4':
         # limit - decimal numbers in one fragment including 0.
-        limit = int("11111111", 2) + 1
+        limit = 256
         for n in range(4):
             diff = int(second_ip_list[n]) - int(first_ip_list[n])
             ip_count *= limit
             ip_count += diff
     elif ip_type == 'ipv6':
         # limit - hexadecimal numbers in one fragment including 0.
-        limit = int("ffff", 16) + 1
+        limit = 65536
         ip_count = 0
         for n in range(8):
             diff = int(second_ip_list[n], 16) - int(first_ip_list[n], 16)
@@ -114,7 +126,9 @@ elif ip_format == "ipv6":
                           "0000 and ffff): ").lower()
         validate_ipv6(second_ip)
     # Calculate IP's in range.
-    count = count_adresses(ip_format, first_ip, second_ip, divider)
+    ip_first_converted = convert_ipv6_short(first_ip)
+    ip_second_converted = convert_ipv6_short(second_ip)
+    count = count_adresses(ip_format, ip_first_converted, ip_second_converted, divider)
 else:
     print("Enter IPv4 or IPv6, please try again. ")
     exit()
